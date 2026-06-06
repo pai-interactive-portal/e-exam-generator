@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Exam Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+	<style>
+        @media print {
+		/* Sembunyikan sidebar */
+		.no-print { display: none !important; }
+		
+		/* Reset Body agar tidak ada margin bawaan browser */
+		body { 
+			background: white; 
+			padding: 0 !important; 
+			margin: 0 !important; 
+		}
+
+		/* Paksa area konten ke pojok kiri atas */
+		.ml-96 { 
+			margin-left: 0 !important; 
+		}
+
+		.paper { 
+			box-shadow: none !important; 
+			margin: 0 !important; 
+			width: 210mm !important; /* Lebar standar A4 */
+			min-height: 297mm;
+			padding: 1.5cm 2cm !important; /* Sesuaikan margin dalam kertas */
+			border: none !important;
+			float: none !important;
+		}
+
+		@page {
+			size: A4;
+			margin-top: 2cm; /* Menghilangkan header/footer otomatis browser */
+			}
+		}
+		
+		@page :first {
+			margin-top: 0cm;
+		}
+		
+        .paper {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 1.5cm 2cm;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            line-height: 1.3;
+        }
+        .kop-surat {
+            display: flex;
+            align-items: center;
+            border-bottom: 4px double black;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+			margin-top: 0px !important;
+        }
+        .logo-placeholder {
+            width: 125px;
+            height: 125px;
+            border: 0px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            margin-right: 15px;
+            text-align: center;
+        }
+        .kop-text {
+            flex: 1;
+            text-align: center;
+        }
+        .identitas-tabel, .penilaian-tabel {
+            width: 100%;
+            margin-bottom: 5px;
+            border-collapse: collapse;
+        }
+        .identitas-tabel td {
+            padding: 2px 5px;
+            vertical-align: top;
+        }
+        .penilaian-tabel td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .soal-container {
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+        .instruksi-section {
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+        }
+        .pilihan-container {
+            margin-left: 20px;
+            margin-top: 2px;
+        }
+        .grid-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 20px;
+        }
+        .check-box {
+            width: 15px;
+            height: 15px;
+            border: 1px solid black;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        /* Style Tabel Khusus */
+        .matching-table, .bs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .bs-table td, .bs-table th {
+            border: 1px solid black;
+            padding: 6px 10px;
+        }
+        .matching-table td {
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+        .matching-table td.content-box {
+    border: 1px solid black;
+    /* Tambahkan baris di bawah ini */
+    word-wrap: break-word;          /* Memaksa kata panjang untuk pindah baris */
+    overflow-wrap: break-word;     /* Standar modern untuk pembungkusan teks */
+    white-space: normal;           /* Memastikan teks tidak dipaksa satu baris */
+    max-width: 0;                  /* Trik CSS agar kolom menghormati persentase width */
+}
+
+/* Tambahkan juga pada tabelnya agar lebarnya konsisten */
+.matching-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    table-layout: fixed;           /* Sangat penting: Memaksa tabel mengikuti lebar yang ditentukan */
+}
+        .matching-table td.spacer-dot {
+            border: none;
+            width: 50px;
+        }
+        .dot-connector {
+            width: 8px;
+			height: 8px;
+			/* Ganti background-color menjadi border hitam tebal */
+			border: 4px solid black; 
+			border-radius: 50%;
+			display: inline-block;
+			box-sizing: border-box;
+        }
+        .bs-table th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Sidebar / Kontrol -->
+    <div class="no-print fixed left-0 top-0 h-full w-96 bg-white shadow-xl p-5 overflow-y-auto z-50 border-r text-sm">
+        <h1 class="text-xl font-bold mb-4 text-blue-800 border-b pb-2">E-EXAM GENERATOR</h1>
+        
+        <div class="space-y-5">
+            <!-- Pengaturan Kop -->
+            <section class="bg-blue-50 p-3 rounded-lg">
+                <h2 class="font-bold mb-2 text-m text-center">Kop Surat</h2>
+                <div class="space-y-2">
+				<label class="text-xs font-bold block text-gray-700">Instansi:</label>
+                    <input type="text" id="inputSekolah" class="w-full border p-2 rounded" value="PEMERINTAH KABUPATEN BOGOR">
+					<input type="text" id="inputSekolah2" class="w-full border p-2 rounded" value="DINAS PENDIDIKAN">
+				<label class="text-xs font-bold block text-gray-700">Sekolah:</label>
+                    <input type="text" id="inputNamaSekolah" class="w-full border p-2 rounded font-bold" value="SD NEGERI CURUG DENGDENG">
+                    <textarea id="inputAlamat" class="w-full border p-2 rounded" rows="2">Alamat: Jl. Kp. Curugdengdeng RT 02/03 Desa Caringin Kec.Caringin Kab. Bogor Pos 16730</textarea>
+					<textarea id="inputAlamat2" class="w-full border p-2 rounded" rows="2">Akreditasi: A Nomor: PD.03090/32/2023 Email:  Sdncurugdengdeng2019@gmail.com</textarea>
+                    
+		<div class="space-y-2">
+			<label class="text-xs font-bold block text-gray-700">Logo:</label>
+				<div class="flex flex-col gap-2">
+					<label for="inputLogo" class="cursor-pointer bg-gray-300 border-1 border-blue-500 text-gray-700 px-4 py-2 rounded text-center font-bold hover:bg-blue-100 transition-all text-xs">
+					Unggah (JPEG/PNG)
+					</label>
+        
+					<input type="file" id="inputLogo" accept="image/*" class="hidden">
+        
+        <span id="fileNameDisplay" class="text-[10px] text-center text-gray-400 italic truncate">Belum ada logo yang diunggah.</span>
+						</div>
+					</div>
+                </div>
+            </section>
+
+            <!-- Pengaturan Ujian -->
+            <section class="bg-green-50 p-3 rounded-lg">
+                <h2 class="font-bold text-center mb-2">Identitas Ujian</h2>
+                <div class="space-y-2">
+				<label class="text-xs font-bold block text-gray-700">Judul:</label>
+                    <input type="text" id="inputJudulUjian" class="w-full border p-2 rounded font-bold" value="ASESMEN AKHIR SEMESTER (AAS) GANJIL">
+					<input type="text" id="inputJudulUjian2" class="w-full border p-2 rounded font-bold" value="TAHUN PELAJARAN 2025-2026">
+                    <div class="grid grid-cols-2 gap-2">
+						<div>
+						<label class="text-xs font-bold">Mata Pelajaran:</label>
+                        <input type="text" id="inputMapel" class="w-full border p-2 rounded" placeholder="Mata Pelajaran" value="-">
+						</div>
+						
+						
+						<div>
+						<label class="text-xs font-bold">Waktu:</label>
+                        <input type="text" id="inputWaktu" class="w-full border p-2 rounded" placeholder="Waktu" value="-">
+                    </div>
+						
+							
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+					<div>
+					<label class="text-xs font-bold">Hari/Tanggal:</label>
+                        <input type="text" id="inputHari" class="w-full border p-2 rounded" placeholder="Hari/Tanggal" value="-">
+						</div>
+						
+						<div>
+						<label class="text-xs font-bold">Kelas:</label>
+                        <input type="text" id="inputKelas" class="w-full border p-2 rounded" placeholder="Kelas" value="-">
+						</div>
+						
+                </div>
+            </section>
+
+            <!-- Impor Soal Aktif -->
+            <section class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                <h2 class="font-bold mb-2 text-center text-yellow-800">Input Soal</h2>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-xs font-bold">Nomor:</label>
+                            <input type="number" id="startNumber" class="w-full border p-2 rounded" value="1">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold">Jenis:</label>
+                            <select id="tipeSoal" class="w-full border p-2 rounded">
+                                <option value="pg">Pilihan Ganda</option>
+                                <option value="pgk">Pilihan Ganda Kompleks</option>
+                                <option value="bs">Benar-Salah</option>
+                                <option value="jodoh">Menjodohkan</option>
+                                <option value="isian">Isian Singkat</option>
+                                <option value="uraian">Uraian</option>
+                            </select>
+                        </div>
+                    </div>
+                    <textarea id="rawInput" rows="8" class="w-full border p-2 text-xs rounded font-mono" placeholder="Ketik/salin naskah soal di sini..."></textarea>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="tambahSoal()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Tambah</button>
+                        <div class="flex gap-2">
+                            <button onclick="undoSoal()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded font-semibold hover:bg-gray-300">Hapus</button>
+                            <button onclick="resetSoal()" class="flex-1 bg-red-100 text-red-600 py-2 rounded font-semibold hover:bg-red-200">Ulangi</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+			<section class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-[11px]">
+    <h2 class="font-bold mb-2 text-blue-800 flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Format Penulisan:
+    </h2>
+    <ul class="list-disc ml-4 space-y-1 text-gray-700">
+        <li><b>Pilihan Ganda:</b><br>- Baris 1 berisi pertanyaan, baris 2-5 berisi pilihan jawaban.<br>- Pisahkan setiap soal dengan baris kosong (2x enter).</li>
+        <li><b>Pilihan Ganda Kompleks:</b><br>- Baris 1 berisi pertanyaan, baris 2-5 berisi pilihan jawaban.<br>- Pisahkan setiap soal dengan baris kosong (2x enter).</li>
+		<li><b>Benar-Salah:</b><br>- Baris 1 berisi perintah, baris 2 dst berisi pernyataan.<br>- Pisahkan setiap soal dengan garis baru (1x enter).</li>
+        <li><b>Menjodohkan:</b><br>- Baris 1 berisi perintah, baris 2 dst berisi pertanyaan.<br>- Pisahkan setiap soal dengan garis baru (1x enter).<br>- Gunakan tanda sama dengan (=) untuk memisahkan pertanyaan dan jawaban.</li>
+        <li><b>Isian/Uraian:</b><br>- Satu baris berisi 1 pertanyaan.<br>- Pisahkan setiap soal dengan baris kosong (2x enter)</li>
+    </ul>
+</section>
+
+            <button onclick="window.print()" class="w-full bg-black text-white py-3 rounded font-bold shadow-lg hover:bg-gray-800">CETAK/SIMPAN (PDF)</button>
+		</div>
+		
+			<div class="mt-8 pt-4 border-t border-gray-200 text-center">
+				<p class="text-xs text-gray-400">Dibuat oleh:</p>
+				<p class="text-sm font-semibold text-gray-600">Dede Ardi Hikmatulloh, S.Th.I<br><span class="text-xs text-blue-600 font-normal">© 2025 - Portal PAI Dasar</span></p>
+			</div>
+    </div>
+	
+
+    <!-- Area Pratinjau -->
+    <div class="ml-96 screen-only-transition"> 
+    <div id="printArea" class="paper">
+    <!-- Kop Surat -->
+            <div class="kop-surat">
+                <div id="logoContainer" class="logo-placeholder text-[14pt] text-gray-300"><span><b>LOGO</b></span></div>
+                <div class="kop-text">
+                    <h2 id="viewSekolah" class="text-[16pt]">PEMERINTAH KABUPATEN BOGOR</h2>
+					<h2 id="viewSekolah2" class="text-[20pt]">DINAS PENDIDIKAN</h2>
+                    <h1 id="viewNamaSekolah" class="text-[22pt] font-bold">SD NEGERI CURUG DENGDENG</h1>
+                    <p id="viewAlamat" class="text-[8pt]">Alamat: Jl. Kp. Curugdengdeng RT 02/03 Desa Caringin Kec.Caringin Kab. Bogor Pos 16730</p>
+					<p id="viewAlamat2" class="text-[8pt]">Akreditasi: A Nomor: PD.03090/32/2023 Email:  Sdncurugdengdeng2019@gmail.com</p>
+                </div>
+            </div>
+
+            <!-- Judul Ujian -->
+            <div class="text-center mb-2">
+                <h2 id="viewJudulUjian" class="text-[14pt] font-bold">ASESMEN AKHIR SEMESTER (AAS) GANJIL</h2>
+				<h2 id="viewJudulUjian2" class="text-[14pt] font-bold">TAHUN PELAJARAN 2025-2026</h2>
+            </div>
+
+            <!-- Identitas Layout -->
+            <table class="identitas-tabel text-[12pt]">
+                <tr>
+                    <td width="20%"><b>Mata Pelajaran</b></td>
+                    <td width="1%">:</td>
+                    <td width="50%" id="viewMapel">-</td>
+                    <td width="10%"><b>Waktu</b></td>
+                    <td width="1%">:</td>
+                    <td width="15%" id="viewWaktu">-</td>
+                </tr>
+                <tr>
+                    <td><b>Hari/Tanggal</b></td>
+                    <td>:</td>
+                    <td id="viewHari">-</td>
+                    <td><b>Kelas</b></td>
+                    <td>:</td>
+                    <td id="viewKelas">-</td>
+                </tr>
+            </table>
+
+            <!-- Tabel Penilaian Gabungan (Absen Ditukar ke Kiri) -->
+            <table class="penilaian-tabel text-[12pt] mb-4">
+                <tr class="font-bold bg-gray-50">
+                    <td width="10%">No. Absen</td>
+                    <td width="40%">Nama Siswa</td>
+                    <td width="15%">Nilai</td>
+                    <td width="17.5%">Paraf Guru</td>
+                    <td width="17.5%">Paraf Orangtua</td>
+                </tr>
+                <tr height="75px">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+			
+			<!-- Petunjuk -->
+            <div class="text-left mb-2">
+                <h2 id="viewPetunjukUjian" class="text-[12pt]"><b>Petunjuk Pengisian:</b>
+				<br>1. Berdoalah sebelum mengerjakan ujian!
+				<br>2. Dahulukan menjawab soal-soal yang dianggap lebih mudah!
+				<br>3. Jika terdapat naskah soal yang tidak terbaca dengan jelas, tanyakan kepada Bapak/Ibu guru!</h2
+            </div>
+
+            <div id="daftarSoal">
+                <!-- Area Soal Dinamis -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputs = ['inputSekolah', 'inputSekolah2', 'inputNamaSekolah', 'inputAlamat', 'inputAlamat2', 'inputJudulUjian', 'inputJudulUjian2', 'inputMapel', 'inputKelas', 'inputHari', 'inputWaktu'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                const viewId = id.replace('input', 'view');
+                document.getElementById(viewId).innerText = e.target.value;
+            });
+        });
+
+		document.getElementById('inputLogo').addEventListener('change', (e) => {
+    const container = document.getElementById('logoContainer');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const file = e.target.files[0];
+
+    if (file) {
+        // 1. Ubah teks "No file chosen" menjadi nama file asli
+        fileNameDisplay.innerText = "Nama File: " + file.name;
+        fileNameDisplay.classList.remove('text-gray-400');
+        fileNameDisplay.classList.add('text-blue-600', 'font-semibold');
+
+        // 2. Proses pratinjau gambar (seperti sebelumnya)
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            container.innerHTML = `<img src="${event.target.result}" class="max-w-full max-h-full object-contain">`;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // Jika batal memilih file
+        fileNameDisplay.innerText = "Belum ada logo yang diunggah.";
+        container.innerHTML = '<span>LOGO</span>';
+		}
+	});
+
+        let soalData = [];
+
+        const instruksi = {
+            pg: "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf a, b, c, atau d!",
+            pgk: "Berilah tanda centang (✓) pada kotak pilihan jawaban yang dianggap benar! Ingat, jawaban bisa lebih dari satu!",
+            bs: "Berilah tanda centang (✓) pada kolom B (Benar) atau kolom S (Salah) sesuai dengan pernyataan yang diberikan!",
+            jodoh: "Hubungkanlah pernyataan pada kolom kiri dan jawaban pada kolom kanan dengan menarik garis lurus!",
+            isian: "Isilah titik-titik di bawah ini dengan jawaban singkat dan benar!",
+            uraian: "Jawablah pertanyaan-pertanyaan berikut ini dengan lugas!"
+        };
+
+        function resetSoal() {
+            if(confirm("Ingin menghapus semua soal?")) {
+                soalData = [];
+                renderSoal();
+                document.getElementById('startNumber').value = 1;
+            }
+        }
+
+        function undoSoal() {
+            if (soalData.length > 0) {
+                const lastKat = soalData[soalData.length - 1];
+                const removedCount = lastKat.items.length;
+                soalData.pop();
+                
+                let currentStart = parseInt(document.getElementById('startNumber').value);
+                document.getElementById('startNumber').value = currentStart - removedCount;
+                
+                renderSoal();
+            }
+        }
+
+        function tambahSoal() {
+            const raw = document.getElementById('rawInput').value.trim();
+            const tipe = document.getElementById('tipeSoal').value;
+            let startNum = parseInt(document.getElementById('startNumber').value) || 1;
+
+            if (!raw) return;
+
+            const blocks = raw.split(/\n\s*\n/);
+            const kategoriBaru = { tipe, instruksi: instruksi[tipe], items: [] };
+
+            blocks.forEach((block) => {
+                const lines = block.trim().split('\n');
+                if (lines.length > 0) {
+                    kategoriBaru.items.push({
+                        nomor: startNum++,
+                        pertanyaan: lines[0],
+                        opsi: lines.slice(1)
+                    });
+                }
+            });
+
+            soalData.push(kategoriBaru);
+            document.getElementById('startNumber').value = startNum;
+            document.getElementById('rawInput').value = "";
+            renderSoal();
+        }
+
+        function renderSoal() {
+            const container = document.getElementById('daftarSoal');
+            container.innerHTML = "";
+
+            if (soalData.length === 0) {
+                container.innerHTML = '<p class="text-gray-300 italic text-center py-20 no-print">- belum ada naskah soal yang disusun -</p>';
+                return;
+            }
+
+            soalData.forEach(kat => {
+                const header = document.createElement('div');
+                header.className = "instruksi-section";
+                header.innerText = kat.instruksi;
+                container.appendChild(header);
+
+                kat.items.forEach(item => {
+                    const soalDiv = document.createElement('div');
+                    soalDiv.className = "soal-container";
+                    
+                    let html = `
+                        <div class="flex gap-2 items-start">
+                            <span class="w-5">${item.nomor}.</span>
+                            <div class="flex-1">${item.pertanyaan}</div>
+                        </div>
+                    `;
+
+                    if (kat.tipe === 'pg') {
+                        html += `<div class="pilihan-container grid-options">`;
+                        const letters = ['A', 'B', 'C', 'D', 'E'];
+                        
+                        // Menukar urutan tampilan: A (0), C (2), B (1), D (3)
+                        const displayOrder = [0, 2, 1, 3, 4]; 
+                        
+                        displayOrder.forEach(idx => {
+                            if (item.opsi[idx]) {
+                                let text = item.opsi[idx].startsWith('*') ? item.opsi[idx].substring(1).trim() : item.opsi[idx].trim();
+                                html += `<div class="flex gap-1"><span class="w-1"> </span><span>${letters[idx]}.</span> <span>${text}</span></div>`;
+                            }
+                        });
+                        html += `</div>`;
+                    } 
+                    else if (kat.tipe === 'pgk') {
+                        html += `<div class="pilihan-container space-y-1">`;
+                        item.opsi.forEach(o => {
+                            html += `<div class="flex items-center gap-1"><span class="w-1"> </span><span class="check-box"></span> <span>${o.trim()}</span></div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    else if (kat.tipe === 'bs') {
+                        html += `<table class="bs-table mt-2">
+                            <thead><tr><th width="80%">Pernyataan</th><th width="10%">B</th><th width="10%">S</th></tr></thead>
+                            <tbody>`;
+                        item.opsi.forEach(o => {
+                            html += `<tr><td>${o.trim()}</td><td align="center"></td><td align="center"></td></tr>`;
+                        });
+                        html += `</tbody></table>`;
+                    }
+                    else if (kat.tipe === 'jodoh') {
+                        html += `<table class="matching-table mt-2">`;
+                        item.opsi.forEach(line => {
+                            const parts = line.split('=');
+                            if(parts.length >= 2) {
+                                html += `<tr>
+                                    <td width="38%" class="content-box">${parts[0].trim()}</td>
+                                    <td class="spacer-dot" align="left"><span class="dot-connector"></span></td>
+                                    <td class="spacer-dot" align="right"><span class="dot-connector"></span></td>
+                                    <td width="38%" class="content-box">${parts[1].trim()}</td>
+                                </tr>
+                                <tr height="8px"><td colspan="4"></td></tr>`;
+                            }
+                        });
+                        html += `</table>`;
+                    }
+                    else if (kat.tipe === 'uraian') {
+                        html += `<div class="mt-4 border-b border-dotted border-black w-full h-1"></div><div class="mt-5 border-b border-dotted border-black w-full h-1"></div>`;
+                    }
+
+                    soalDiv.innerHTML = html;
+                    container.appendChild(soalDiv);
+                });
+            });
+        }
+		
+		
+    </script>
+</body>
+</html>
