@@ -29,6 +29,7 @@
 			min-height: 297mm;
 			padding: 1.5cm 2cm !important; /* Sesuaikan margin dalam kertas */
 			border: none !important;
+			outline: none !important;
 			float: none !important;
 		}
 
@@ -52,7 +53,12 @@
             font-family: "Times New Roman", Times, serif;
             font-size: 12pt;
             line-height: 1.3;
+			/* Tambahan Garis Pandu Pratinjau A4 */
+            border: 1px solid #ccc; /* Garis abu-abu di sekeliling kertas */
+            outline: 20px solid #e5e7eb; /* Efek "meja" abu-abu di luar kertas */
+			background-color: white;
         }
+		
         .kop-surat {
             display: flex;
             align-items: center;
@@ -163,13 +169,56 @@
             background-color: #f2f2f2;
             text-align: center;
         }
+		
+		/* Pengaturan Gambar Resizable */
+        .resizable-img-container {
+            display: inline-block;
+            vertical-align: top;
+            resize: both; 
+            overflow: hidden; 
+            width: 150px;
+            height: 150px;
+            min-width: 50px;
+            min-height: 50px;
+            border: 2px dashed transparent;
+            margin: 5px;
+        }
+        .resizable-img-container:hover {
+            border-color: #3b82f6; 
+        }
+        .img-wrap-left {
+            float: left; /* Wrap text di kanan gambar untuk pertanyaan */
+            margin: 5px 15px 5px 0;
+        }
+        .resizable-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        /* Clearfix opsional */
+        .soal-container::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        /* Tampilkan garis putus-putus biru saat kursor diarahkan ke gambar */
+        .resizable-img-container:hover {
+            border-color: #3b82f6; 
+        }
+        		
+		#daftarSoal, #daftarSoal table {
+            font-size: var(--ukuran-huruf); 
+			font-family: var(--jenis-huruf-soal);
+        }
+		
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
     <!-- Sidebar / Kontrol -->
     <div class="no-print fixed left-0 top-0 h-full w-96 bg-white shadow-xl p-5 overflow-y-auto z-50 border-r text-sm">
-        <h1 class="text-xl font-bold mb-4 text-blue-800 border-b pb-2">E-EXAM GENERATOR</h1>
+        <h1 class="text-xl font-bold mb-4 text-blue-800 border-b pb-2">Generator Naskah Soal Ujian</h1>
         
         <div class="space-y-5">
             <!-- Pengaturan Kop -->
@@ -233,8 +282,8 @@
 						
                 </div>
             </section>
-
-            <!-- Impor Soal Aktif -->
+			
+			<!-- Impor Soal Aktif -->
             <section class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                 <h2 class="font-bold mb-2 text-center text-yellow-800">Input Soal</h2>
                 <div class="space-y-3">
@@ -252,6 +301,7 @@
                                 <option value="jodoh">Menjodohkan</option>
                                 <option value="isian">Isian Singkat</option>
                                 <option value="uraian">Uraian</option>
+								<option value="label">Label/Teks Biasa</option>
                             </select>
                         </div>
                     </div>
@@ -265,6 +315,31 @@
                     </div>
                 </div>
             </section>
+			
+			<!-- Pengaturan Tampilan -->
+            <section class="bg-purple-50 p-3 rounded-lg">
+                <h2 class="font-bold mb-2 text-center text-purple-800">Tampilan Soal</h2>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+							<label class="text-xs font-bold">Jenis Huruf:</label>
+							<select id="inputFontFamily" class="w-full border p-2 rounded">
+								<option value='"Times New Roman", Times, serif'>Times New Roman</option>
+								<option value='Arial, Helvetica, sans-serif'>Arial</option>
+								<option value='"Calibri", sans-serif'>Calibri</option>
+								<option value='"Comic Sans MS", cursive, sans-serif'>Comic Sans</option>
+								<option value='"Courier New", Courier, monospace'>Courier</option>
+							</select>
+						</div>
+						<div>
+							<label class="text-xs font-bold">Ukuran Huruf:</label>
+					        <input type="number" id="inputFontSize" class="w-full border p-2 rounded" min="10" max="24" value="12" step="0.5">
+						</div>
+					</div>		
+				</div>
+            </section>
+
+			<!--- Pengaturan Format Penulisan -->
 			<section class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-[11px]">
     <h2 class="font-bold mb-2 text-blue-800 flex items-center gap-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -278,7 +353,13 @@
 		<li><b>Benar-Salah:</b><br>- Baris 1 berisi perintah, baris 2 dst berisi pernyataan.<br>- Pisahkan setiap soal dengan garis baru (1x enter).</li>
         <li><b>Menjodohkan:</b><br>- Baris 1 berisi perintah, baris 2 dst berisi pertanyaan.<br>- Pisahkan setiap soal dengan garis baru (1x enter).<br>- Gunakan tanda sama dengan (=) untuk memisahkan pertanyaan dan jawaban.</li>
         <li><b>Isian/Uraian:</b><br>- Satu baris berisi 1 pertanyaan.<br>- Pisahkan setiap soal dengan baris kosong (2x enter)</li>
-    </ul>
+		<li><b>Unggah Gambar:</b><br>- Sisipkan tanda kurung ([ ]) pada naskah soal.<br>- Klik ulang gambar untuk mengganti.<br>- Sesuaikan ukuran gambar sebelum disimpan/dicetak.
+		<li><b>Format Khusus:</b> 
+                        <br>- [b]kata/kalimat[/b] untuk tulisan tebal.
+                        <br>- [i]kata/kalimat[/i] untuk tulisan miring.
+                        <br>- [u]kata/kalimat[/u] untuk memberikan garis bawah.
+                    </li>
+	</ul>
 </section>
 
             <button onclick="window.print()" class="w-full bg-black text-white py-3 rounded font-bold shadow-lg hover:bg-gray-800">CETAK/SIMPAN (PDF)</button>
@@ -365,6 +446,17 @@
     </div>
 
     <script>
+	// Fitur Ubah Ukuran Huruf (Zoom)
+        document.getElementById('inputFontSize').addEventListener('input', (e) => {
+            const size = e.target.value + 'pt';
+            document.documentElement.style.setProperty('--ukuran-huruf', size);
+        });
+		
+	// Fitur Ubah Jenis Huruf
+        document.getElementById('inputFontFamily').addEventListener('change', (e) => {
+            document.documentElement.style.setProperty('--jenis-huruf-soal', e.target.value);
+        });
+		
         const inputs = ['inputSekolah', 'inputSekolah2', 'inputNamaSekolah', 'inputAlamat', 'inputAlamat2', 'inputJudulUjian', 'inputJudulUjian2', 'inputMapel', 'inputKelas', 'inputHari', 'inputWaktu'];
         inputs.forEach(id => {
             document.getElementById(id).addEventListener('input', (e) => {
@@ -396,20 +488,24 @@
         container.innerHTML = '<span>LOGO</span>';
 		}
 	});
+	
+	// Data Soal
 
         let soalData = [];
+		let imageCounter = 0;
 
         const instruksi = {
-            pg: "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf a, b, c, atau d!",
+            pg: "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf A, B, C, atau D!",
             pgk: "Berilah tanda centang (✓) pada kotak pilihan jawaban yang dianggap benar! Ingat, jawaban bisa lebih dari satu!",
             bs: "Berilah tanda centang (✓) pada kolom B (Benar) atau kolom S (Salah) sesuai dengan pernyataan yang diberikan!",
             jodoh: "Hubungkanlah pernyataan pada kolom kiri dan jawaban pada kolom kanan dengan menarik garis lurus!",
             isian: "Isilah titik-titik di bawah ini dengan jawaban singkat dan benar!",
-            uraian: "Jawablah pertanyaan-pertanyaan berikut ini dengan lugas!"
+            uraian: "Jawablah pertanyaan-pertanyaan berikut ini dengan lugas!",
+			label: ""
         };
 
         function resetSoal() {
-            if(confirm("Ingin menghapus semua soal?")) {
+            if(confirm("Yakin untuk menghapus semua soal?")) {
                 soalData = [];
                 renderSoal();
                 document.getElementById('startNumber').value = 1;
@@ -428,7 +524,11 @@
                 renderSoal();
             }
         }
-
+		
+		function injectUniqueIds(str) {
+            return str.replace(/\[\]/g, () => `[IMG_${++imageCounter}]`);
+        }
+		
         function tambahSoal() {
             const raw = document.getElementById('rawInput').value.trim();
             const tipe = document.getElementById('tipeSoal').value;
@@ -436,17 +536,28 @@
 
             if (!raw) return;
 
-            const blocks = raw.split(/\n\s*\n/);
+            const blocks = raw.split(/\r?\n\s*\r?\n/);
             const kategoriBaru = { tipe, instruksi: instruksi[tipe], items: [] };
 
             blocks.forEach((block) => {
-                const lines = block.trim().split('\n');
-                if (lines.length > 0) {
-                    kategoriBaru.items.push({
-                        nomor: startNum++,
-                        pertanyaan: lines[0],
-                        opsi: lines.slice(1)
-                    });
+                const lines = block.trim().split(/\r?\n/);
+                if (lines.length > 0 && lines[0] !== '') {
+                    if (tipe === 'label') {
+                        // Label teks tidak diberi nomor dan semua baris digabung
+                        kategoriBaru.items.push({
+                            nomor: null,
+                            pertanyaan: lines.join('<br>'),
+                            opsi: []
+                        });
+                    } else {
+                        // Soal normal
+                        kategoriBaru.items.push({
+                            nomor: startNum++,
+                            pertanyaan: injectUniqueIds(lines[0]),
+                            opsi: lines.slice(1).map(injectUniqueIds),
+                            gambar: {}
+                        });
+                    }
                 }
             });
 
@@ -454,6 +565,97 @@
             document.getElementById('startNumber').value = startNum;
             document.getElementById('rawInput').value = "";
             renderSoal();
+        }
+		
+		function uploadImage(input, kIdx, iIdx, imgId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Cukup simpan ke objek memori, lalu render ulang
+                    soalData[kIdx].items[iIdx].gambar[imgId] = e.target.result;
+                    renderSoal();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+		
+		function previewInlineImage(input, kIdx, iIdx, fieldType, oIdx, matchIndex) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Membuat tag baru yang mendukung resize dan klik untuk ganti gambar
+                    const imgTag = `<div class="resizable-img-container print-border-none" title="Klik untuk mengganti gambar, atau seret sudut kanan bawah untuk mengubah ukuran gambar.">
+                        <label class="cursor-pointer block w-full h-full no-print-overflow">
+                            <img src="${e.target.result}" alt="Gambar Soal">
+                            <input type="file" class="hidden no-print" accept="image/*" onchange="previewInlineImage(this, ${kIdx}, ${iIdx}, '${fieldType}', ${oIdx}, ${matchIndex})">
+                        </label>
+                    </div>`;
+                    
+                    let textToUpdate = fieldType === 'pertanyaan' ? 
+                        soalData[kIdx].items[iIdx].pertanyaan : 
+                        soalData[kIdx].items[iIdx].opsi[oIdx];
+                    
+                    // Cek apakah ini mengganti gambar (sudah ada div container) atau unggahan baru (placeholder [])
+                    if (textToUpdate.includes('resizable-img-container')) {
+                        // Mengganti gambar yang sudah ada dengan split/join string sederhana
+                        const parts = textToUpdate.split(/<div class="resizable-img-container[^>]*>.*?<\/div>/s);
+                        if (parts.length > 1) {
+                            textToUpdate = parts[0] + imgTag + parts[1];
+                        }
+                    } else {
+                        // Unggah gambar baru dari placeholder []
+                        let currentMatch = 0;
+                        textToUpdate = textToUpdate.replace(/\[\]/g, function(match) {
+                            if (currentMatch === matchIndex) {
+                                currentMatch++;
+                                return imgTag;
+                            }
+                            currentMatch++;
+                            return match;
+                        });
+                    }
+
+                    // Simpan pembaruan ke dalam soalData
+                    if (fieldType === 'pertanyaan') {
+                        soalData[kIdx].items[iIdx].pertanyaan = textToUpdate;
+                    } else {
+                        soalData[kIdx].items[iIdx].opsi[oIdx] = textToUpdate;
+                    }
+                    renderSoal();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function processImagePlaceholder(text, kIdx, iIdx, isWrap) {
+            if (!text) return "";
+            
+            // Format HTML khusus
+            text = text.replace(/\[b\]/gi, '<b>').replace(/\[\/b\]/gi, '</b>')
+                       .replace(/\[i\]/gi, '<i>').replace(/\[\/i\]/gi, '</i>')
+                       .replace(/\[u\]/gi, '<u>').replace(/\[\/u\]/gi, '</u>');
+            
+            const item = soalData[kIdx].items[iIdx];
+            const wrapClass = isWrap ? "img-wrap-left" : "";
+            
+            // Konversi Token Gambar (IMG_xxx) menjadi visual
+            return text.replace(/\[IMG_([0-9]+)\]/g, function(match, imgId) {
+                const base64 = item.gambar[imgId];
+                
+                if (base64) {
+                    return `<div class="resizable-img-container print-border-none ${wrapClass}" title="Klik untuk mengganti, seret sudut kanan bawah untuk mengubah ukuran">
+                        <label class="cursor-pointer block w-full h-full no-print-overflow">
+                            <img src="${base64}" alt="Gambar Soal">
+                            <input type="file" class="hidden no-print" accept="image/*" onchange="uploadImage(this, ${kIdx}, ${iIdx}, '${imgId}')">
+                        </label>
+                    </div>`;
+                } else {
+                    return `<label class="cursor-pointer inline-flex items-center justify-center border-2 border-dashed border-gray-400 p-2 text-[10px] text-gray-500 hover:bg-gray-50 print-border-none no-print ${wrapClass}">
+                        <span class="no-print">🖼️</span>
+                        <input type="file" class="hidden no-print" accept="image/*" onchange="uploadImage(this, ${kIdx}, ${iIdx}, '${imgId}')">
+                    </label>`;
+                }
+            });
         }
 
         function renderSoal() {
@@ -465,72 +667,122 @@
                 return;
             }
 
-            soalData.forEach(kat => {
-                const header = document.createElement('div');
-                header.className = "instruksi-section";
-                header.innerText = kat.instruksi;
-                container.appendChild(header);
+            soalData.forEach((kat, kIdx) => {
+                // Jangan buat header instruksi jika tipe adalah label
+                if (kat.tipe !== 'label' && kat.instruksi) {
+                    const header = document.createElement('div');
+                    header.className = "instruksi-section";
+                    header.innerText = kat.instruksi;
+                    container.appendChild(header);
+                }
 
-                kat.items.forEach(item => {
+                kat.items.forEach((item, iIdx) => {
                     const soalDiv = document.createElement('div');
                     soalDiv.className = "soal-container";
+                    let processedPertanyaan = processImagePlaceholder(item.pertanyaan, kIdx, iIdx, true);
+
+                    let html = '';
                     
-                    let html = `
-                        <div class="flex gap-2 items-start">
-                            <span class="w-5">${item.nomor}.</span>
-                            <div class="flex-1">${item.pertanyaan}</div>
-                        </div>
-                    `;
+                    if (kat.tipe === 'label') {
+                        // Render khusus label teks: tanpa nomor, cetak tebal, justify
+                        html = `<div style="margin-top: 4px; margin-bottom: 4px; text-align: justify;">${processedPertanyaan}</div>`;
+                    } else {
+                        // Render soal biasa dengan nomor
+                        html = `
+                            <table style="width:100%; margin-bottom: 4px;">
+                                <tr>
+                                    <td style="width:25px; vertical-align:top;">${item.nomor}.</td>
+                                    <td style="vertical-align:top;">${processedPertanyaan}</td>
+                                </tr>
+                            </table>
+                        `;
+                    }
 
                     if (kat.tipe === 'pg') {
-                        html += `<div class="pilihan-container grid-options">`;
-                        const letters = ['A', 'B', 'C', 'D', 'E'];
-                        
-                        // Menukar urutan tampilan: A (0), C (2), B (1), D (3)
-                        const displayOrder = [0, 2, 1, 3, 4]; 
-                        
-                        displayOrder.forEach(idx => {
-                            if (item.opsi[idx]) {
-                                let text = item.opsi[idx].startsWith('*') ? item.opsi[idx].substring(1).trim() : item.opsi[idx].trim();
-                                html += `<div class="flex gap-1"><span class="w-1"> </span><span>${letters[idx]}.</span> <span>${text}</span></div>`;
+                        html += `<table style="width:100%; margin-left: 25px; margin-bottom: 10px;">`;
+                        let opsis = [];
+                        for(let i=0; i<5; i++) {
+                            if (item.opsi[i]) {
+                                let text = item.opsi[i].startsWith('*') ? item.opsi[i].substring(1).trim() : item.opsi[i].trim();
+                                opsis[i] = processImagePlaceholder(text, kIdx, iIdx, false);
+                            } else {
+                                opsis[i] = "";
                             }
-                        });
-                        html += `</div>`;
+                        }
+                        
+                        html += `<tr>`;
+                        html += `<td style="width:50%; vertical-align:top; padding-bottom:4px;">${opsis[0] ? `A. ${opsis[0]}` : ''}</td>`;
+                        html += `<td style="width:50%; vertical-align:top; padding-bottom:4px;">${opsis[2] ? `B. ${opsis[2]}` : ''}</td>`;
+                        html += `</tr><tr>`;
+                        html += `<td style="width:50%; vertical-align:top; padding-bottom:4px;">${opsis[1] ? `C. ${opsis[1]}` : ''}</td>`;
+                        html += `<td style="width:50%; vertical-align:top; padding-bottom:4px;">${opsis[3] ? `D. ${opsis[3]}` : ''}</td>`;
+                        html += `</tr>`;
+                        if (opsis[4]) {
+                            html += `<tr><td colspan="2" style="vertical-align:top; padding-bottom:4px;">E. ${opsis[4]}</td></tr>`;
+                        }
+                        html += `</table>`;
                     } 
                     else if (kat.tipe === 'pgk') {
-                        html += `<div class="pilihan-container space-y-1">`;
-                        item.opsi.forEach(o => {
-                            html += `<div class="flex items-center gap-1"><span class="w-1"> </span><span class="check-box"></span> <span>${o.trim()}</span></div>`;
+                        html += `<table style="margin-left: 25px; width: 100%; margin-bottom: 10px;">`;
+                        item.opsi.forEach((o, oIdx) => {
+                            let text = processImagePlaceholder(o.trim(), kIdx, iIdx, 'opsi', oIdx);
+                            html += `<tr>
+                                <td style="width: 25px; vertical-align: top; padding-bottom:4px;">
+                                    <span style="display:inline-block; width:12px; height:12px; border:1px solid black; margin-top:4px;"></span>
+                                </td>
+                                <td style="vertical-align: top; padding-bottom:4px;">${text}</td>
+                            </tr>`;
                         });
-                        html += `</div>`;
+                        html += `</table>`;
                     }
                     else if (kat.tipe === 'bs') {
                         html += `<table class="bs-table mt-2">
                             <thead><tr><th width="80%">Pernyataan</th><th width="10%">B</th><th width="10%">S</th></tr></thead>
                             <tbody>`;
-                        item.opsi.forEach(o => {
-                            html += `<tr><td>${o.trim()}</td><td align="center"></td><td align="center"></td></tr>`;
+                        item.opsi.forEach((o, oIdx) => {
+                            let text = processImagePlaceholder(o.trim(), kIdx, iIdx, 'opsi', oIdx);
+                            html += `<tr><td>${text}</td><td align="center"></td><td align="center"></td></tr>`;
                         });
                         html += `</tbody></table>`;
                     }
                     else if (kat.tipe === 'jodoh') {
                         html += `<table class="matching-table mt-2">`;
-                        item.opsi.forEach(line => {
-                            const parts = line.split('=');
-                            if(parts.length >= 2) {
-                                html += `<tr>
-                                    <td width="38%" class="content-box">${parts[0].trim()}</td>
-                                    <td class="spacer-dot" align="left"><span class="dot-connector"></span></td>
-                                    <td class="spacer-dot" align="right"><span class="dot-connector"></span></td>
-                                    <td width="38%" class="content-box">${parts[1].trim()}</td>
-                                </tr>
-                                <tr height="8px"><td colspan="4"></td></tr>`;
+                        item.opsi.forEach((line, oIdx) => {
+                            let processedLine = processImagePlaceholder(line.trim(), kIdx, iIdx, 'opsi', oIdx);
+                            
+                            let splitIndex = -1;
+                            let insideTag = false;
+                            
+                            for(let i = 0; i < processedLine.length; i++) {
+                                if (processedLine[i] === '<') insideTag = true;
+                                else if (processedLine[i] === '>') insideTag = false;
+                                else if (processedLine[i] === '=' && !insideTag) {
+                                    splitIndex = i;
+                                    break;
+                                }
                             }
+                            
+                            let leftPart = processedLine;
+                            let rightPart = "";
+                            
+                            if (splitIndex !== -1) {
+                                leftPart = processedLine.substring(0, splitIndex).trim();
+                                rightPart = processedLine.substring(splitIndex + 1).trim();
+                            }
+
+                            html += `<tr>
+                                <td width="38%" class="content-box">${leftPart}</td>
+                                <td class="spacer-dot" align="left"><span class="dot-connector"></span></td>
+                                <td class="spacer-dot" align="right"><span class="dot-connector"></span></td>
+                                <td width="38%" class="content-box">${rightPart}</td>
+                            </tr>
+                            <tr height="8px"><td colspan="4"></td></tr>`;
                         });
                         html += `</table>`;
                     }
+					
                     else if (kat.tipe === 'uraian') {
-                        html += `<div class="mt-4 border-b border-dotted border-black w-full h-1"></div><div class="mt-5 border-b border-dotted border-black w-full h-1"></div>`;
+                        html += `<div class="ml-6 mt-4">Jawab:</div><div class="ml-6 mt-4 border-b border-dotted border-black w-full h-1"></div><div class="ml-6 mt-5 border-b border-dotted border-black w-full h-1"></div><div class="ml-6 mt-5 border-b border-dotted border-black w-full h-1"></div>`;
                     }
 
                     soalDiv.innerHTML = html;
