@@ -104,6 +104,7 @@
         }
         .instruksi-section {
             font-weight: bold;
+			text-align: justify;
             margin: 15px 0 10px 0;
         }
         .pilihan-container {
@@ -498,7 +499,7 @@
 		let imageCounter = 0;
 
         const instruksi = {
-            pg: "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf a, b, c, atau d!",
+            pg: "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf A, B, C, atau D!",
             pgk: "Berilah tanda centang (✓) pada kotak pilihan jawaban yang dianggap benar! Ingat, jawaban bisa lebih dari satu!",
             bs: "Berilah tanda centang (✓) pada kolom B (Benar) atau kolom S (Salah) sesuai dengan pernyataan yang diberikan!",
             jodoh: "Hubungkanlah pernyataan pada kolom kiri dan jawaban pada kolom kanan dengan menarik garis lurus!",
@@ -671,11 +672,24 @@
             }
 
             soalData.forEach((kat, kIdx) => {
+               
                 // Jangan buat header instruksi jika tipe adalah label
                 if (kat.tipe !== 'label' && kat.instruksi) {
                     const header = document.createElement('div');
                     header.className = "instruksi-section";
-                    header.innerText = kat.instruksi;
+                    
+                    let teksInstruksi = kat.instruksi;
+                    // Ubah instruksi otomatis khusus untuk tipe PG berdasarkan jumlah pilihan
+                    if (kat.tipe === 'pg' && kat.items.length > 0) {
+                        const jmlOpsi = kat.items[0].opsi.length;
+                        if (jmlOpsi === 3) {
+                            teksInstruksi = "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf A, B, atau C!";
+                        } else if (jmlOpsi === 5) {
+                            teksInstruksi = "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf C, B, C, D, atau E!";
+                        }
+                    }
+                    
+                    header.innerText = teksInstruksi;
                     container.appendChild(header);
                 }
 
@@ -713,18 +727,39 @@
                             }
                         }
                         
-                        html += `<tr>`;
-                        html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">A.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[0] ? `${opsis[0]}` : ''}</td><td style="width:5%;"></td>`;
-                        html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">B.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[0] ? `${opsis[2]}` : ''}</td><td style="width:5%;"></td>`;
-                        html += `</tr><tr>`;
-                        html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">C.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[1] ? `${opsis[1]}` : ''}</td><td style="width:5%;"></td>`;
-                        html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">D.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[3] ? `${opsis[3]}` : ''}</td><td style="width:5%;"></td>`;
-                        html += `</tr>`;
-                        if (opsis[4]) {
-                            html += `<tr><td colspan="2" style="vertical-align:top; padding-bottom:4px;">E. ${opsis[4]}</td></tr>`;
+                        const jmlOpsi = item.opsi.length;
+                        
+                        if (jmlOpsi === 3) {
+                            // Layout memanjang kiri ke kanan: A - B - C
+                            html += `<tr>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">A.</td><td style="width:30%; vertical-align:top; padding-bottom:4px;">${opsis[0]}</td>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">B.</td><td style="width:30%; vertical-align:top; padding-bottom:4px;">${opsis[1]}</td>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">C.</td><td style="width:34%; vertical-align:top; padding-bottom:4px;">${opsis[2]}</td>`;
+                            html += `</tr>`;
+                        } else if (jmlOpsi === 5) {
+                            // Layout 2 Kolom Vertikal: (A,B,C) Kiri - (D,E) Kanan
+                            html += `<tr>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">A.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[0]}</td><td style="width:5%;"></td>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">D.</td><td style="width:47%; vertical-align:top; padding-bottom:4px;">${opsis[3]}</td>`;
+                            html += `</tr><tr>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">B.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[1]}</td><td style="width:5%;"></td>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">E.</td><td style="width:47%; vertical-align:top; padding-bottom:4px;">${opsis[4]}</td>`;
+                            html += `</tr><tr>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">C.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[2]}</td><td colspan="3"></td>`;
+                            html += `</tr>`;
+                        } else {
+                            // Layout Default (4 Opsi): (A,B) Kiri - (C,D) Kanan
+                            html += `<tr>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">A.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[0] ? `${opsis[0]}` : ''}</td><td style="width:5%;"></td>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">C.</td><td style="width:47%; vertical-align:top; padding-bottom:4px;">${opsis[2] ? `${opsis[2]}` : ''}</td>`;
+                            html += `</tr><tr>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">B.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[1] ? `${opsis[1]}` : ''}</td><td style="width:5%;"></td>`;
+                            html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">D.</td><td style="width:47%; vertical-align:top; padding-bottom:4px;">${opsis[3] ? `${opsis[3]}` : ''}</td>`;
+                            html += `</tr>`;
                         }
                         html += `</table>`;
-                    } 
+                    }
+					
                     else if (kat.tipe === 'pgk') {
                         html += `<table style="margin-left: 25px; width: 100%; margin-bottom: 10px;">`;
                         item.opsi.forEach((o, oIdx) => {
