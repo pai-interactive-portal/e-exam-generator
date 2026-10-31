@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Exam Generator</title>
+    <title>Generator Naskah Soal Ujian</title>
     <script src="https://cdn.tailwindcss.com"></script>
 	<style>
         @media print {
@@ -99,6 +99,7 @@
         }
         .soal-container {
             margin-bottom: 12px;
+			text-align: justify;
             page-break-inside: avoid;
         }
         .instruksi-section {
@@ -107,11 +108,13 @@
         }
         .pilihan-container {
             margin-left: 20px;
+			text-align: justify;
             margin-top: 2px;
         }
         .grid-options {
             display: grid;
             grid-template-columns: 1fr 1fr;
+			text-align: justify;
             column-gap: 20px;
         }
         .check-box {
@@ -495,7 +498,7 @@
 		let imageCounter = 0;
 
         const instruksi = {
-            pg: "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf A, B, C, atau D!",
+            pg: "Pilihlah satu jawaban yang tepat dengan memberi tanda silang (x) pada huruf a, b, c, atau d!",
             pgk: "Berilah tanda centang (✓) pada kotak pilihan jawaban yang dianggap benar! Ingat, jawaban bisa lebih dari satu!",
             bs: "Berilah tanda centang (✓) pada kolom B (Benar) atau kolom S (Salah) sesuai dengan pernyataan yang diberikan!",
             jodoh: "Hubungkanlah pernyataan pada kolom kiri dan jawaban pada kolom kanan dengan menarik garis lurus!",
@@ -711,11 +714,11 @@
                         }
                         
                         html += `<tr>`;
-                        html += `<td style="width:50%; vertical-align:top; padding-bottom:4px;">${opsis[0] ? `A. ${opsis[0]}` : ''}</td>`;
-                        html += `<td style="width:50%; vertical-align:top; padding-bottom:4px;">${opsis[2] ? `B. ${opsis[2]}` : ''}</td>`;
+                        html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">A.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[0] ? `${opsis[0]}` : ''}</td><td style="width:5%;"></td>`;
+                        html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">B.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[0] ? `${opsis[2]}` : ''}</td><td style="width:5%;"></td>`;
                         html += `</tr><tr>`;
-                        html += `<td style="width:50%; vertical-align:top; padding-bottom:4px;">${opsis[1] ? `C. ${opsis[1]}` : ''}</td>`;
-                        html += `<td style="width:50%; vertical-align:top; padding-bottom:4px;">${opsis[3] ? `D. ${opsis[3]}` : ''}</td>`;
+                        html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">C.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[1] ? `${opsis[1]}` : ''}</td><td style="width:5%;"></td>`;
+                        html += `<td style="width:3%; vertical-align:top; padding-bottom:4px;">D.</td><td style="width:42%; vertical-align:top; padding-bottom:4px;">${opsis[3] ? `${opsis[3]}` : ''}</td><td style="width:5%;"></td>`;
                         html += `</tr>`;
                         if (opsis[4]) {
                             html += `<tr><td colspan="2" style="vertical-align:top; padding-bottom:4px;">E. ${opsis[4]}</td></tr>`;
